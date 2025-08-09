@@ -173,32 +173,8 @@ int loca = 0x0000;
 	{
 		fprintf(fptr4,"%-7s\t%-5X\n",symtab[j].sym,symtab[j].hex);
 	}
+	fclose(fptr1);
+	fclose(fptr2);
+	fclose(fptr3);
+	fclose(fptr4);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
