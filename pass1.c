@@ -141,6 +141,8 @@ int loca = 0x0000;
 	while(strcmp(tab[i].opc,"END"))
 	{
 		fprintf(fptr3,"%5X\t%-10s %-10s %-10s\n",loca,tab[i].lab,tab[i].opc,tab[i].ope);
+
+		tab[i].loc = loca;
 	
 		if(strcmp(tab[i].lab,"")!=0) searchLabel(tab[i].lab,loca);
 		
