@@ -133,6 +133,7 @@ int loca = 0x0000;
 	else
 	{
 		loca = tab[0].loc = 0x0000;
+		loca += 3;
 	}
 	fprintf(fptr3,"%5X\t%-10s %-10s %-10s\n",tab[0].loc,tab[0].lab,tab[0].opc,tab[0].ope);
 	
