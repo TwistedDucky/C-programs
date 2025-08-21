@@ -94,14 +94,15 @@ int loca = 0x0000;
 	if(strcmp(opcode,"START")==0)
 	{
 		loca = strtol(operand,NULL,16);
-		
+		fprintf(fptr3,"%5X\t%-10s %-10s %-10s\n",loca,label,opcode,operand);
 	}
 	else
 	{
 		loca = 0x0000;
+		fprintf(fptr3,"%5X\t%-10s %-10s %-10s\n",loca,label,opcode,operand);
+		loca += 3;
 	}
-	fprintf(fptr3,"%5X\t%-10s %-10s %-10s\n",loca,label,opcode,operand);
-	loca += 3;
+	
 	
 	while(strcmp(opcode,"END"))
 	{
@@ -132,7 +133,7 @@ int loca = 0x0000;
 		}
 		else if(strcmp(opcode,"BYTE")== 0)
 		{
-			if(operand[0] == 'C') loca += strlen(operand) - 3;
+			if(operand[0] == 'C'||operand[0] == 'c') loca += strlen(operand) - 3;
 			else loca += (strlen(operand)-3)/2;
 		}
 	}
