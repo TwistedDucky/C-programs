@@ -2,7 +2,7 @@
 #include<string.h>
 #include<stdlib.h>
 
-int si = 0,oi = 0,line=0;
+int si = 0,oi = 0;
 struct optable
 {
 	char opc[10];
@@ -15,18 +15,9 @@ struct symtable
 	int hex;
 }symtab[20];
 
-struct loo
-{
-	char opc[10];
-	char lab[10];
-	char ope[10];
-	int loc;
-}tab[20];
-
 int searchOpcode(char a[])
 {
 	int i = oi;
-	int found = 0;
 	
 	for(int j =0; j < i; j++)
 	{
@@ -35,11 +26,7 @@ int searchOpcode(char a[])
 			return 1;
 		}
 	}
-	
-	if(found == 0)
-	{
 		return 0;
-	}
 }
 
 int searchLabel(char a[],int hexa)
@@ -59,118 +46,96 @@ int searchLabel(char a[],int hexa)
 	{
 		strcpy(symtab[i].sym,a);
 		symtab[i].hex = hexa;
-		si++; 
+		si++;
+		return 0;
 	}
 }
 
 void readOp(FILE *fptr)
 {
-	int index = 0;
+	oi = 0;
 	while(!feof(fptr))
 	{
-		fscanf(fptr,"%s %s",optab[index].opc,optab[index].hex);
-		index++;	
+		fscanf(fptr,"%s %s",optab[oi].opc,optab[oi].hex);
+		oi++;	
 	}
 }
 
-void readLine(FILE *fptr)
+void readLine(FILE *fptr,char label[], char opcode[], char operand[])
 {
-	
-	int i = 0;
-	
-	while(!feof(fptr))
-	{
-		char c;
-		char s1[10]="",s2[10]="",s3[10]="";
-		fscanf(fptr,"%s",s1);
-		if((c = fgetc(fptr)) != '\n')
+	char line[50];
+	strcpy(label,"");strcpy(opcode,"");strcpy(operand,"");
+
+		if(fgets(line,sizeof(line),fptr))
 		{
-			fscanf(fptr,"%s",s2);
-			if((c = fgetc(fptr)) != '\n')
-			{
-				fscanf(fptr,"%s",s3);
-			}
+			int n = sscanf(line,"%s %s %s",label,opcode,operand);
+			if(n == 1) { strcpy(opcode,label); strcpy(label,""); strcpy(operand,""); }
+        	else if(n == 2) {strcpy(operand,opcode); strcpy(opcode,label);  strcpy(label,""); }
 		}
-		
-		if(strcmp(s1,"")!=0 && strcmp(s2,"")!=0 && strcmp(s3,"")!=0)
-		{
-			strcpy(tab[i].lab,s1);
-			strcpy(tab[i].opc,s2);
-			strcpy(tab[i].ope,s3);
-		}
-		else if(strcmp(s1,"")!=0 && strcmp(s2,"")!=0 && strcmp(s3,"")==0)
-		{
-			strcpy(tab[i].opc,s1);
-			strcpy(tab[i].ope,s2);
-		}
-		else if(strcmp(s1,"")!=0 && strcmp(s2,"")==0 && strcmp(s3,"")==0)
-		{
-			strcpy(tab[i].opc,s1);
-		}
-		
-		printf("%s %s %s\n",tab[i].lab,tab[i].opc,tab[i].ope);
-		i++;oi++;line++;
-	}
+		printf("%s %s %s\n",label,opcode,operand);
 }
 
 void main()
 {
 int loca = 0x0000;
 	FILE * fptr1,*fptr2,*fptr3,*fptr4;
+
+	char opcode[20],operand[20],label[20];
+
 	fptr1 = fopen("input.txt","r");
 	fptr2 = fopen("optab.txt","r");
 	fptr3 = fopen("inter.txt","w");
 	
 	fptr4 = fopen("symtab.txt","w");
+
 	readOp(fptr2);
-	readLine(fptr1);
+	readLine(fptr1,label,opcode,operand);
 	
-	if(strcmp(tab[0].opc,"START")==0)
+	if(strcmp(opcode,"START")==0)
 	{
-		loca = tab[0].loc = strtol(tab[0].ope,NULL,16);
+		loca = strtol(operand,NULL,16);
 		
 	}
 	else
 	{
-		loca = tab[0].loc = 0x0000;
-		loca += 3;
+		loca = 0x0000;
 	}
-	fprintf(fptr3,"%5X\t%-10s %-10s %-10s\n",tab[0].loc,tab[0].lab,tab[0].opc,tab[0].ope);
+	fprintf(fptr3,"%5X\t%-10s %-10s %-10s\n",loca,label,opcode,operand);
+	loca += 3;
 	
-	int i = 1;
-	
-	while(strcmp(tab[i].opc,"END"))
+	while(strcmp(opcode,"END"))
 	{
-		fprintf(fptr3,"%5X\t%-10s %-10s %-10s\n",loca,tab[i].lab,tab[i].opc,tab[i].ope);
-
-		tab[i].loc = loca;
-	
-		if(strcmp(tab[i].lab,"")!=0) searchLabel(tab[i].lab,loca);
-		
-		if(searchOpcode(tab[i].opc) == 1)
+		readLine(fptr1,label,opcode,operand);
+		if(strcmp(opcode,"")==0)
 		{
-			loca = loca+0x0003;
+			continue;
 		}
-		else if(strcmp(tab[i].opc,"WORD") == 0)
+		fprintf(fptr3,"%5X\t%-10s %-10s %-10s\n",loca,label,opcode,operand);
+
+		if(strcmp(label,"")!=0) searchLabel(label,loca);
+		
+		if(searchOpcode(opcode) == 1)
+		{
+			loca += 3;
+		}
+		else if(strcmp(opcode,"WORD") == 0)
 		{
 			loca = loca + 3;		
 		}
-		else if(strcmp(tab[i].opc,"RESW") == 0)
+		else if(strcmp(opcode,"RESW") == 0)
 		{
-			loca += atoi(tab[i].ope) * 3;		
+			loca += atoi(operand) * 3;		
 		}
-		else if(strcmp(tab[i].opc,"RESB") == 0)
+		else if(strcmp(opcode,"RESB") == 0)
 		{
-			loca += atoi(tab[i].ope);		
+			loca += atoi(operand);		
 		}
-		else if(strcmp(tab[i].opc,"BYTE")== 0)
+		else if(strcmp(opcode,"BYTE")== 0)
 		{
-			loca += strlen(tab[i].ope) - 3;	
+			if(operand[0] == 'C') loca += strlen(operand) - 3;
+			else loca += (strlen(operand)-3)/2;
 		}
-
-		i++;
 	}
-	fprintf(fptr3,"%5X\t%-10s %-10s %-10s\n",loca,tab[i].lab,tab[i].opc,tab[i].ope);
 
 	for(int j = 0; j < si; j++)
 	{
