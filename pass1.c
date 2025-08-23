@@ -94,12 +94,12 @@ int loca = 0x0000;
 	if(strcmp(opcode,"START")==0)
 	{
 		loca = strtol(operand,NULL,16);
-		fprintf(fptr3,"%5X\t%-10s %-10s %-10s\n",loca,label,opcode,operand);
+		fprintf(fptr3,"%04X\t%-10s %-10s %-10s\n",loca,label,opcode,operand);
 	}
 	else
 	{
 		loca = 0x0000;
-		fprintf(fptr3,"%5X\t%-10s %-10s %-10s\n",loca,label,opcode,operand);
+		fprintf(fptr3,"%04X\t%-10s %-10s %-10s\n",loca,label,opcode,operand);
 		loca += 3;
 	}
 	
@@ -111,7 +111,7 @@ int loca = 0x0000;
 		{
 			continue;
 		}
-		fprintf(fptr3,"%5X\t%-10s %-10s %-10s\n",loca,label,opcode,operand);
+		fprintf(fptr3,"%04X\t%-10s %-10s %-10s\n",loca,label,opcode,operand);
 
 		if(strcmp(label,"")!=0) searchLabel(label,loca);
 		
