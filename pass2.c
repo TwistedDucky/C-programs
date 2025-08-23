@@ -1,3 +1,7 @@
+//I am positive that this code works only if my pass one is used so alter however neccesary.
+//The code is not perfect so copy at your own risk.
+//It may be noted that this code uses some unconventional methods for the implementation.
+
 #include<stdio.h>
 #include<string.h>
 #include<stdlib.h>
@@ -144,16 +148,20 @@ void readLine(FILE *fptr,char locctr[],char label[], char opcode[], char operand
 
 void main()
 {
-int loca = 0x0000;
-	FILE * fptr1,*fptr2,*fptr3,*fptr4;
+int start = 0x0000;
+	FILE * fptr1,*fptr2,*fptr3,*fptr4,*fptr5;
 
-	char opcode[20],operand[20],label[20],locctr[10],obj[15];
+	char opcode[20],operand[20],label[20],locctr[10],obj[15],header[23],text[100],end[10];
+
+	char hexlen[3];
+
+	int length = 0x178D,objlen,remlen;
 
 	fptr1 = fopen("inter.txt","r");
 	fptr2 = fopen("optab.txt","r");
 	fptr3 = fopen("list.txt","w");
 	fptr4 = fopen("symtab.txt","r");
-
+	fptr5 = fopen("obj.txt","w");
 
 	readOp(fptr2);
 	readSym(fptr4);
@@ -163,23 +171,72 @@ int loca = 0x0000;
 	if(strcmp(opcode,"START")==0)
 	{
 		fprintf(fptr3,"%5s\t%-10s %-10s %-10s\n",locctr,label,opcode,operand);
+		start = strtol(operand,NULL,16);
+
+		sprintf(header,"H^%s^%0*X^%0*X",label,6,start,6,length);//header record
 	}
 	else
 	{
 		findObj(obj,opcode,operand);
 		fprintf(fptr3,"%5s\t%-10s %-10s %-10s %-10s\n",locctr,label,opcode,operand,obj);
+
+		sprintf(header,"H^%s^%0*X^%0*X","000000",6,start,6,length);//header record
 	}
+
+	fprintf(fptr5,"%s\n",header);
+
+	sprintf(text,"T^00%s^00",locctr);
+	remlen = 60;
+
+	sprintf(end,"E^%0*X",6,start);//End record
 	
-	
+	readLine(fptr1,locctr,label,opcode,operand);
+
 	while(strcmp(opcode,"END"))
 	{
-		readLine(fptr1,locctr,label,opcode,operand);
 		findObj(obj,opcode,operand);
+
+		if(strcmp(obj,"") != 0)
+		{
+			if(( objlen = strlen(obj) ) > remlen)
+			{
+				sprintf(hexlen,"%02X",(60-remlen)/2);
+				text[9] = hexlen[0];
+				text[10] = hexlen[1];
+
+				fprintf(fptr5,"%s\n",text);
+				strcpy(text,"");
+				sprintf(text,"T^00%s^00",locctr);
+				remlen = 60 - objlen;
+				strcat(text,"^");
+				strcat(text,obj);
+			}
+			else
+			{
+				strcat(text,"^");
+				strcat(text,obj);
+				remlen -= objlen;
+			}
+		}
+
 		fprintf(fptr3,"%5s\t%-10s %-10s %-10s %-10s\n",locctr,label,opcode,operand,obj);
+		readLine(fptr1,locctr,label,opcode,operand);
 	}
+	fprintf(fptr3,"%5s\t%-10s %-10s %-6s%04X\n",locctr,"",opcode,"",start);
+
+	if(remlen <=60)
+	{
+		sprintf(hexlen,"%02X",(60-remlen)/2);
+				text[9] = hexlen[0];
+				text[10] = hexlen[1];
+		fprintf(fptr5,"%s\n",text);
+	}
+
+	fprintf(fptr5,"%s\n",end);
 
 	fclose(fptr1);
 	fclose(fptr2);
 	fclose(fptr3);
 	fclose(fptr4);
+	fclose(fptr5);
 }
