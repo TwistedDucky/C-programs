@@ -75,8 +75,8 @@ void findObj(char obj[],char opcode[], char operand[])
 	}
 	else if(strcmp(opcode,"WORD")==0)
 	{
-		int x = strtol(operand,NULL,16);
-		sprintf(obj,"%0*X",6,x);
+		int x = strtol(operand,NULL,10);
+		sprintf(obj,"%06X",x);
 	}
 	else
 	{	
