@@ -110,7 +110,7 @@ void findObj(char obj[],char opcode[], char operand[])
 			xx &= 0x7FFF;
 		}
 
-		sprintf(obj,"%0*X%0*X",2,searchOpcode(opcode),4,xx);
+		sprintf(obj,"%02X%04X",searchOpcode(opcode),xx);
 	}
 }
 
@@ -157,6 +157,11 @@ int start = 0x0000;
 
 	int length = 0x178D,objlen,remlen;
 
+	char prglen[6];
+	printf("Enter the length of the program(HEX): ");
+	scanf("%s",prglen);
+	length = strtol(prglen,NULL,16);
+	
 	fptr1 = fopen("inter.txt","r");
 	fptr2 = fopen("optab.txt","r");
 	fptr3 = fopen("list.txt","w");
@@ -173,14 +178,14 @@ int start = 0x0000;
 		fprintf(fptr3,"%5s\t%-10s %-10s %-10s\n",locctr,label,opcode,operand);
 		start = strtol(operand,NULL,16);
 
-		sprintf(header,"H^%s^%0*X^%0*X",label,6,start,6,length);//header record
+		sprintf(header,"H^%s^%06X^%06X",label,start,length);//header record
 	}
 	else
 	{
 		findObj(obj,opcode,operand);
 		fprintf(fptr3,"%5s\t%-10s %-10s %-10s %-10s\n",locctr,label,opcode,operand,obj);
 
-		sprintf(header,"H^%s^%0*X^%0*X","000000",6,start,6,length);//header record
+		sprintf(header,"H^%s^%06X^%06X","000000",start,length);//header record
 	}
 
 	fprintf(fptr5,"%s\n",header);
@@ -188,7 +193,7 @@ int start = 0x0000;
 	sprintf(text,"T^00%s^00",locctr);
 	remlen = 60;
 
-	sprintf(end,"E^%0*X",6,start);//End record
+	sprintf(end,"E^%06X",start);//End record
 	
 	readLine(fptr1,locctr,label,opcode,operand);
 
