@@ -69,7 +69,7 @@ void findObj(char obj[],char opcode[], char operand[])
 		else
 			for(int i = 2; i < length-1; i++)
 			{
-				sprintf(buf,"%X",operand[i]);
+				sprintf(buf,"%c",operand[i]);
 				strcat(obj,buf);
 			}
 	}
